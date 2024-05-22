@@ -170,4 +170,4 @@ try {
     }
 }
 
-export { Dynamic };
+export { DynamicPro };
