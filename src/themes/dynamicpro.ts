@@ -4,16 +4,21 @@ import { createCanvas, loadImage } from "@napi-rs/canvas";
 import { cropImage } from "cropify";
 
 const DynamicPro = async (option: DynamicProOption) => {
-    if (!option.progress) option.progress = 10;
-    if (!option.name) option.name = "Musicard"
-    if (!option.author) option.author = "By Unburn"
-
-    if (!option.progressBarColor) option.progressBarColor = "#5F2D00";
-    if (!option.progressColor) option.progressColor = "#FF7A00";
-    if (!option.backgroundColor) option.backgroundColor = "#070707"
-    if (!option.nameColor) option.nameColor = "#FF7A00"
-    if (!option.authorColor) option.authorColor = "#FFFFFF"
-    if (!option.imageDarkness) option.imageDarkness = 10
+  if (!option.name)
+    option.name = "Not Found";
+  if (!option.author)
+    option.author = "NyuBot";
+    option.backgroundColor = "#070707";
+  if (!option.nameColor)
+    option.nameColor = "#FF7A00";
+  if (!option.authorColor)
+    option.authorColor = "#FFFFFF";
+  if (!option.imageDarkness)
+    option.imageDarkness = 10;
+  if (!option.duration)
+    option.duration = "Not Found";
+  if (!option.requested)
+    option.requested = "Nyu";
 
     const noImageSvg = generateSvg(`<svg width="837" height="837" viewBox="0 0 837 837" fill="none" xmlns="http://www.w3.org/2000/svg">
     <rect width="837" height="837" fill="${option.progressColor}"/>
@@ -24,39 +29,73 @@ const DynamicPro = async (option: DynamicProOption) => {
         option.thumbnailImage = noImageSvg
     };
 
-    let thumbnail;
+  let thumbnail;
+  let userIcon;
+  let plataformIcon;
+    
+  try {
+    thumbnail = await loadImage3(await cropImage3({
+      imagePath: option.thumbnailImage,
+      borderRadius: 210,
+      width: 400,
+      height: 400,
+      cropCenter: true
+    }));
+  } catch {
+    thumbnail = await loadImage3(await cropImage3({
+      imagePath: noImageSvg,
+      borderRadius: 210,
+      width: 400,
+      height: 400,
+      cropCenter: true
+    }));
+  }
 
-    try {
-        thumbnail = await loadImage(await cropImage({
-            imagePath: option.thumbnailImage,
-            borderRadius: 210,
-            width: 400,
-            height: 400,
-            cropCenter: true
-        }))
-    } catch {
-        thumbnail = await loadImage(await cropImage({
-            imagePath: noImageSvg,
-            borderRadius: 210,
-            width: 400,
-            height: 400,
-            cropCenter: true
-        }))
-    }
+  try {
+    userIcon = await loadImage(await cropImage({
+        imagePath: option.userImage,
+        borderRadius: 50,
+        width: 100,
+        height: 100,
+        cropCenter: true
+    }))
+} catch {
+  userIcon = await loadImage(await cropImage({
+        imagePath: noImageSvg,
+        borderRadius: 50,
+        width: 100,
+        height: 100,
+        cropCenter: true
+    }))
+}
 
-    if (option.progress < 10) {
-        option.progress = 10
-    } else if (option.progress >= 100) {
-        option.progress = 99.999
-    }
+try {
+  plataformIcon = await loadImage(await cropImage({
+      imagePath: option.plataform,
+      borderRadius: 50,
+      width: 150,
+      height: 150,
+      cropCenter: true
+  }))
+} catch {
+  plataformIcon = await loadImage(await cropImage({
+      imagePath: noImageSvg,
+      borderRadius: 50,
+      width: 150,
+      height: 150,
+      cropCenter: true
+  }))
+}
 
-    if (option.name.length > 20) {
-        option.name = option.name.slice(0, 20) + "...";
-    }
-
-    if (option.author.length > 20) {
-        option.author = option.author.slice(0, 20) + "...";
-    }
+  if (option.name.length > 32) {
+    option.name = option.name.slice(0, 32) + "...";
+  }
+  if (option.author.length > 25) {
+    option.author = option.author.slice(0, 25) + "...";
+  }
+  if (option.duration.length > 7) {
+    option.duration = option.duration.slice(0, 7) + "...";
+  }
 
     try {
         const canvas = createCanvas(2367, 520);
@@ -80,7 +119,7 @@ const DynamicPro = async (option: DynamicProOption) => {
                     imagePath: option.backgroundImage,
                     width: 2367,
                     height: 520,
-                    borderRadius: 270,
+                    borderRadius: 50,
                     cropCenter: true
                 })
 
@@ -88,7 +127,7 @@ const DynamicPro = async (option: DynamicProOption) => {
                     imagePath: darknessSvg,
                     width: 2367,
                     height: 520,
-                    borderRadius: 270,
+                    borderRadius: 50,
                     cropCenter: true
                 })
 
@@ -105,30 +144,25 @@ const DynamicPro = async (option: DynamicProOption) => {
             }
         }
 
-        ctx.drawImage(thumbnail, 69, 61)
+    ctx.drawImage(thumbnail, 69, 61);
+    ctx.drawImage(userIcon, 550, 380);
+    ctx.drawImage(plataformIcon, 2200, 360);
 
-        ctx.beginPath();
-        ctx.arc(2100, 260, 155, 0, Math.PI * 2, true);
-        ctx.closePath();
-        ctx.lineWidth = 35;
-        ctx.strokeStyle = `${option.progressBarColor}`;
-        ctx.stroke();
+    ctx.fillStyle = `${option.nameColor}`;
+    ctx.font = "100px extrabold";
+    ctx.fillText(option.name, 550, 150);
 
-        const angle = (option.progress / 100) * Math.PI * 2;
+    ctx.fillStyle = `${option.authorColor}`;
+    ctx.font = "70px semibold";
+    ctx.fillText(option.author, 550, 250);
 
-        ctx.beginPath();
-        ctx.arc(2100, 260, 155, -Math.PI / 2, -Math.PI / 2 + angle, false);
-        ctx.lineWidth = 35;
-        ctx.strokeStyle = option.progressColor;
-        ctx.stroke();
+    ctx.fillStyle = `${option.timeColor}`;
+    ctx.font = "70px semibold";
+    ctx.fillText(option.duration, 550, 350);
 
-        ctx.fillStyle = `${option.nameColor}`
-        ctx.font = "100px extrabold"
-        ctx.fillText(option.name, 550, 240);
-
-        ctx.fillStyle = `${option.authorColor}`
-        ctx.font = "70px semibold"
-        ctx.fillText(option.author, 550, 350);
+    ctx.fillStyle = `${option.timeColor}`;
+    ctx.font = "70px semibold";
+    ctx.fillText(option.requested, 690, 450);
 
         return canvas.toBuffer("image/png");
     } catch (e: any) {
